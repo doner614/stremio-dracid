@@ -37,7 +37,7 @@ try:
 except Exception as e:
     print(f"Erro ao ler banco de dados: {e}")
 
-# Estrutura do Manifesto para o seu Stremio
+# Estrutura do Manifesto Corrigida para o seu Stremio
 meu_addon = {
     "id": "org.dracidclean.streaming",
     "version": "1.0.0",
@@ -49,6 +49,11 @@ meu_addon = {
         {
             "id": "dracid_streaming_hoje",
             "type": "movie",
+            "name": "Lançados no Streaming"
+        },
+        {
+            "id": "dracid_streaming_hoje",
+            "type": "series",
             "name": "Lançados no Streaming"
         }
     ],
