@@ -16,6 +16,11 @@
             "id": "dracid_streaming_hoje",
             "type": "movie",
             "name": "Lançados no Streaming"
+        },
+        {
+            "id": "dracid_streaming_hoje",
+            "type": "series",
+            "name": "Lançados no Streaming"
         }
     ],
     "metas": []
