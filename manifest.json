@@ -2,7 +2,7 @@
     "id": "org.dracidclean.streaming",
     "version": "1.0.0",
     "name": "Dracid Streaming Limpo",
-    "description": "Lançamentos de Streaming do Dracid sem Cinema",
+    "description": "Catálogo de Streaming das Tabelas do Dracid",
     "resources": [
         "catalog",
         "meta"
@@ -13,9 +13,14 @@
     ],
     "catalogs": [
         {
-            "id": "dracid_released_movies",
+            "id": "dracid_clean_movies",
             "type": "movie",
             "name": "Lançados no Streaming"
+        },
+        {
+            "id": "dracid_clean_series",
+            "type": "series",
+            "name": "Séries no Streaming"
         }
     ],
     "metas": []
