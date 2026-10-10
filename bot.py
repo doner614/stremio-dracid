@@ -1,10 +1,26 @@
 import requests
 from bs4 import BeautifulSoup
 import json
+import os
 from datetime import datetime
 
-print("A iniciar extração direta (Scraping) das páginas públicas do Dracid...")
+print("A iniciar atualização cumulativa do catálogo Stremio...")
 
+# 1. Tentar ler o arquivo atual (se já existir) para manter o histórico
+filmes_acumulados = []
+if os.path.exists("manifest.json"):
+    try:
+        with open("manifest.json", "r", encoding="utf-8") as f:
+            dados_antigos = json.load(f)
+            filmes_acumulados = dados_antigos.get("metas", [])
+            print(f"Histórico carregado: {len(filmes_acumulados)} itens já registados.")
+    except Exception as e:
+        print(f"Aviso ao ler histórico: {e}")
+
+# Criar um conjunto de IDs já existentes para evitar duplicar filmes
+ids_existentes = {item["id"] for item in filmes_acumulados if "id" in item}
+
+# 2. Ler as novidades do Dracid para o dia de HOJE
 urls = [
     "https://github.io",
     "https://github.io"
@@ -14,9 +30,8 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
-# Obter a data de hoje no formato do site (ex: "10 Oct 2026")
 hoje_str = datetime.now().strftime("%d %b %Y").lstrip("0")
-filmes_filtrados = []
+novos_itens = 0
 
 for url in urls:
     try:
@@ -26,10 +41,10 @@ for url in urls:
             
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Procurar por todas as linhas de filmes/séries
         for card in soup.find_all(class_=["card", "movie-row", "item"]): 
             texto_card = card.get_text()
             
+            # Verificar estritamente se o lançamento é hoje
             if hoje_str in texto_card:
                 plataforma = "Streaming"
                 texto_lower = texto_card.lower()
@@ -53,44 +68,45 @@ for url in urls:
                             imdb_id = partes[1].split("/")[0]
                         break
                 
-                item_stremio = {
-                    "id": imdb_id,
-                    "type": "movie" if "movie" in url else "series",
-                    "name": titulo_str,
-                    "poster": f"https://metahub.space{imdb_id}/img",
-                    "released": datetime.now().isoformat(),
-                    "behaviorHints": {
-                        "defaultVideoId": imdb_id,
-                        "hasBadge": True,
-                        "badge": f"{plataforma} | {datetime.now().strftime('%d/%m')}"
+                # Se o filme for novo e não estiver no histórico, adiciona-o!
+                if imdb_id not in ids_existentes and imdb_id != "tt0000000":
+                    item_stremio = {
+                        "id": imdb_id,
+                        "type": "movie" if "movie" in url else "series",
+                        "name": titulo_str,
+                        "poster": f"https://metahub.space{imdb_id}/img",
+                        "released": datetime.now().isoformat(),
+                        "behaviorHints": {
+                            "defaultVideoId": imdb_id,
+                            "hasBadge": True,
+                            "badge": f"{plataforma}"
+                        }
                     }
-                }
-                filmes_filtrados.append(item_stremio)
+                    filmes_acumulados.append(item_stremio)
+                    ids_existentes.add(imdb_id)
+                    novos_itens += 1
     except Exception as e:
         print(f"Erro ao ler a página: {e}")
 
+# 3. Estruturar e gravar o Add-on final atualizado
 meu_addon = {
     "id": "org.dracidclean.streaming",
     "version": "1.0.0",
     "name": "Dracid Streaming Limpo",
-    "description": "Lançamentos de Streaming do Dia com Badges",
+    "description": "Lista Acumulativa de Lançamentos de Streaming",
     "resources": ["catalog", "meta"],
     "types": ["movie", "series"],
     "catalogs": [
         {
             "id": "dracid_streaming_hoje",
             "type": "movie",
-            "name": "Lançados Hoje no Streaming"
+            "name": "Lançados no Streaming"
         }
     ],
-    "metas": [] # Temporariamente vazio se não houver estreias no dia exato
+    "metas": filmes_acumulados
 }
-
-# SE existirem lançamentos hoje, injetamos no catálogo
-if filmes_filtrados:
-    meu_addon["metas"] = filmes_filtrados
 
 with open("manifest.json", "w", encoding="utf-8") as f:
     json.dump(meu_addon, f, indent=4, ensure_ascii=False)
 
-print("Processo concluído com sucesso!")
+print(f"Sucesso! Foram adicionados {novos_itens} novos lançamentos de hoje. Catálogo total: {len(filmes_acumulados)} itens.")
