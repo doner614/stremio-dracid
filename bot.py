@@ -43,9 +43,11 @@ for tipo, url in urls.items():
                         href_link = link['href']
                         # CORREÇÃO CRÍTICA: Extração limpa do ID sem usar comandos duplos ou splits em listas
                         if "/title/" in href_link:
-                            id_extraido = href_link.split("/title/")[1].split("/")[0]
-                            if id_extraido.startswith("tt"):
-                                imdb_id = id_extraido
+                            partes_url = href_link.split("/title/")
+                            if len(partes_url) > 1:
+                                id_limpo = partes_url[1].split("/")[0]
+                                if id_limpo.startswith("tt"):
+                                    imdb_id = id_limpo
                         break
                 
                 nome_plataforma = "Streaming"
