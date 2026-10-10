@@ -1,6 +1,5 @@
 import requests
 import json
-from datetime import datetime
 
 print("A iniciar leitura direta do banco de dados oficial do Dracid...")
 
@@ -22,13 +21,14 @@ try:
         for item in dados_brutos.get("metas", []):
             plataforma = item.get("platform", "Streaming")
             plataforma_lower = plataforma.lower()
+            imdb_id = item.get("id", "")
             
             # Filtrar apenas o que é digital/streaming, eliminando o cinema puro
             if any(p in plataforma_lower for p in ["netflix", "apple tv+", "prime video", "disney+", "hbo max", "vod", "digital"]):
                 
                 # Configurar a etiqueta oficial no topo do poster
                 item["behaviorHints"] = {
-                    "defaultVideoId": item.get("id"),
+                    "defaultVideoId": imdb_id,
                     "hasBadge": True,
                     "badge": f"{plataforma}"
                 }
