@@ -18,36 +18,5 @@
             "name": "Lançados no Streaming"
         }
     ],
-    "metas": [
-        {
-            "id": "tt28498219",
-            "type": "movie",
-            "name": "Matchbox",
-            "poster": "https://metahub.space",
-            "behaviorHints": {
-                "hasBadge": true,
-                "badge": "APPLE TV+"
-            }
-        },
-        {
-            "id": "tt31049299",
-            "type": "movie",
-            "name": "Animals",
-            "poster": "https://metahub.space",
-            "behaviorHints": {
-                "hasBadge": true,
-                "badge": "NETFLIX"
-            }
-        },
-        {
-            "id": "tt33214716",
-            "type": "movie",
-            "name": "The Florist",
-            "poster": "https://metahub.space",
-            "behaviorHints": {
-                "hasBadge": true,
-                "badge": "VOD"
-            }
-        }
-    ]
+    "metas": []
 }
