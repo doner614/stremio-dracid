@@ -2,7 +2,7 @@
     "id": "org.dracidclean.streaming",
     "version": "1.0.0",
     "name": "Dracid Streaming Limpo",
-    "description": "Catálogo de Streaming das Tabelas do Dracid",
+    "description": "Catálogo de Streaming Direto da Base de Dados do Dracid",
     "resources": [
         "catalog",
         "meta"
