@@ -3,8 +3,14 @@
     "version": "1.0.0",
     "name": "Dracid Streaming Limpo",
     "description": "Lista Acumulativa de Lançamentos de Streaming",
-    "resources": ["catalog", "meta"],
-    "types": ["movie", "series"],
+    "resources": [
+        "catalog",
+        "meta"
+    ],
+    "types": [
+        "movie",
+        "series"
+    ],
     "catalogs": [
         {
             "id": "dracid_streaming_hoje",
@@ -18,21 +24,30 @@
             "type": "movie",
             "name": "Matchbox",
             "poster": "https://metahub.space",
-            "behaviorHints": {"hasBadge": true, "badge": "APPLE TV+"}
+            "behaviorHints": {
+                "hasBadge": true,
+                "badge": "APPLE TV+"
+            }
         },
         {
             "id": "tt31049299",
             "type": "movie",
             "name": "Animals",
             "poster": "https://metahub.space",
-            "behaviorHints": {"hasBadge": true, "badge": "NETFLIX"}
+            "behaviorHints": {
+                "hasBadge": true,
+                "badge": "NETFLIX"
+            }
         },
         {
             "id": "tt33214716",
             "type": "movie",
             "name": "The Florist",
             "poster": "https://metahub.space",
-            "behaviorHints": {"hasBadge": true, "badge": "VOD"}
+            "behaviorHints": {
+                "hasBadge": true,
+                "badge": "VOD"
+            }
         }
     ]
 }
