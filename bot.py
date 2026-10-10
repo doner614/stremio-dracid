@@ -5,7 +5,6 @@ from datetime import datetime
 
 print("A iniciar extração direta (Scraping) das páginas públicas do Dracid...")
 
-# Links das tabelas públicas do Dracid
 urls = [
     "https://github.io",
     "https://github.io"
@@ -27,13 +26,11 @@ for url in urls:
             
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Procurar por todas as linhas ou cartões de filmes na página
+        # Procurar por todas as linhas de filmes/séries
         for card in soup.find_all(class_=["card", "movie-row", "item"]): 
             texto_card = card.get_text()
             
-            # Verificar se o lançamento é hoje
             if hoje_str in texto_card:
-                # Identificar a plataforma de streaming
                 plataforma = "Streaming"
                 texto_lower = texto_card.lower()
                 
@@ -42,26 +39,25 @@ for url in urls:
                         plataforma = p.upper() if p != "apple tv+" else "Apple TV+"
                         break
                 
-                # Se contiver apenas cinema, ignoramos
                 if "cinema" in texto_lower and plataforma == "Streaming":
                     continue
                 
-                # Tentar extrair o título e o ID do IMDb se estiver presente nos links
                 titulo = card.find(['h2', 'h3', 'strong'])
                 titulo_str = titulo.get_text().strip() if titulo else "Conteúdo Digital"
                 
                 imdb_id = "tt0000000"
                 for link in card.find_all('a', href=True):
                     if "://imdb.com" in link['href']:
-                        imdb_id = link['href'].split("/title/")[1].split("/")[0]
+                        partes = link['href'].split("/title/")
+                        if len(partes) > 1:
+                            imdb_id = partes[1].split("/")[0]
                         break
                 
-                # Montar o objeto no formato oficial de metadados do Stremio
                 item_stremio = {
                     "id": imdb_id,
                     "type": "movie" if "movie" in url else "series",
                     "name": titulo_str,
-                    "poster": "https://metahub.space" + imdb_id + "/img",
+                    "poster": f"https://metahub.space{imdb_id}/img",
                     "released": datetime.now().isoformat(),
                     "behaviorHints": {
                         "defaultVideoId": imdb_id,
@@ -71,9 +67,8 @@ for url in urls:
                 }
                 filmes_filtrados.append(item_stremio)
     except Exception as e:
-        print(f"Erro ao ler a página {url}: {e}")
+        print(f"Erro ao ler a página: {e}")
 
-# Estrutura do Add-on final para o Stremio
 meu_addon = {
     "id": "org.dracidclean.streaming",
     "version": "1.0.0",
@@ -88,11 +83,14 @@ meu_addon = {
             "name": "Lançados Hoje no Streaming"
         }
     ],
-    "metas": filmes_filtrados
+    "metas": [] # Temporariamente vazio se não houver estreias no dia exato
 }
 
-# Gravar o ficheiro final público
+# SE existirem lançamentos hoje, injetamos no catálogo
+if filmes_filtrados:
+    meu_addon["metas"] = filmes_filtrados
+
 with open("addon.json", "w", encoding="utf-8") as f:
     json.dump(meu_addon, f, indent=4, ensure_ascii=False)
 
-print(f"Sucesso! Processo concluído. {len(filmes_filtrados)} lançamentos filtrados para o catálogo.")
+print("Processo concluído com sucesso!")
