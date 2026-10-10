@@ -8,7 +8,7 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
-# 1. LINKS REAIS (Retira os espaços entre os pontos e as barras após colares!)
+# 1. LINKS REAIS (Lembra-te de apagar os espaços dentro das aspas!)
 urls = {
     "movie": "https://dracid77.github.io/lists/upcoming-movies",
     "series": "https://dracid77.github.io/lists/upcoming-series"
@@ -41,13 +41,12 @@ for tipo, url in urls.items():
                 for link in item.find_all('a', href=True):
                     if "://imdb.com" in link['href']:
                         href_link = link['href']
-                        # CORREÇÃO CRÍTICA: Extração limpa do ID sem usar comandos duplos ou splits em listas
                         if "/title/" in href_link:
                             partes_url = href_link.split("/title/")
                             if len(partes_url) > 1:
-                                id_limpo = partes_url[1].split("/")[0]
-                                if id_limpo.startswith("tt"):
-                                    imdb_id = id_limpo
+                                id_extraido = partes_url[1].split("/")[0]
+                                if id_extraido.startswith("tt"):
+                                    imdb_id = id_extraido
                         break
                 
                 nome_plataforma = "Streaming"
