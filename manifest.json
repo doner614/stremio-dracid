@@ -2,7 +2,7 @@
     "id": "org.dracidclean.streaming",
     "version": "1.0.0",
     "name": "Dracid Streaming Limpo",
-    "description": "Lista Acumulativa de Lançamentos de Streaming",
+    "description": "Catálogo Cumulativo de Streaming do Dracid",
     "resources": [
         "catalog",
         "meta"
