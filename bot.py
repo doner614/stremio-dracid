@@ -1,8 +1,7 @@
 import requests
-from bs4 import BeautifulSoup
 import json
 
-print("A aceder diretamente aos canais de dados oficiais do Dracid...")
+print("A aceder diretamente aos canais de dados oficiais e limpos do Dracid...")
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -27,11 +26,15 @@ def processar_banco_dados(url, lista_destino):
                 plataforma = item.get("platform", "Streaming")
                 plataforma_lower = plataforma.lower()
                 
-                # Aplicação rigorosa do filtro de streaming digital
-                if any(p in plataforma_lower for p in ["netflix", "apple tv+", "prime video", "disney+", "hbo max", "vod", "digital"]):
-                    # Injetar a badge oficial com a plataforma
+                # Capturar o ID do IMDb correto diretamente do banco de dados (Sem Splits!)
+                imdb_id = item.get("id", "")
+                
+                # Aplicação do filtro de streaming digital
+                if imdb_id and any(p in plataforma_lower for p in ["netflix", "apple tv+", "prime video", "disney+", "hbo max", "vod", "digital"]):
+                    
+                    # Garantir que o item mantém o seu ID nativo estruturado
                     item["behaviorHints"] = {
-                        "defaultVideoId": item.get("id"),
+                        "defaultVideoId": imdb_id,
                         "hasBadge": True,
                         "badge": f"{plataforma}"
                     }
