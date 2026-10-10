@@ -1,66 +1,61 @@
 import requests
 import json
 
-print("A iniciar leitura direta do banco de dados oficial do Dracid...")
+print("A clonar e a filtrar o catálogo oficial do Dracid...")
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
-filmes_acumulados = []
+filmes_filtrados = []
 
-# Link do banco de dados bruto do catálogo de filmes do Dracid
-url_db = "https://github.io"
+# Link do catálogo oficial que o Add-on do Dracid usa no Stremio
+url_dracid = "https://github.io"
 
 try:
-    response = requests.get(url_db, headers=headers)
+    response = requests.get(url_dracid, headers=headers)
     if response.status_code == 200:
-        dados_brutos = response.json()
+        dados_dracid = response.json()
         
-        # Percorrer os filmes já lançados e aplicar o nosso filtro de Streaming limpo
-        for item in dados_brutos.get("metas", []):
-            plataforma = item.get("platform", "Streaming")
+        # Percorrer a lista oficial do Dracid e extrair APENAS o streaming
+        for item in dados_dracid.get("metas", []):
+            plataforma = item.get("platform", "")
             plataforma_lower = plataforma.lower()
-            imdb_id = item.get("id", "")
             
-            # Filtrar apenas o que é digital/streaming, eliminando o cinema puro
+            # Filtro rigoroso: mantém apenas plataformas digitais
             if any(p in plataforma_lower for p in ["netflix", "apple tv+", "prime video", "disney+", "hbo max", "vod", "digital"]):
                 
-                # Configurar a etiqueta oficial no topo do poster
+                # Injetar a badge oficial com o nome da plataforma
                 item["behaviorHints"] = {
-                    "defaultVideoId": imdb_id,
+                    "defaultVideoId": item.get("id"),
                     "hasBadge": True,
                     "badge": f"{plataforma}"
                 }
-                filmes_acumulados.append(item)
-        print(f"Sucesso! Encontrados {len(filmes_acumulados)} filmes de streaming na base de dados.")
+                filmes_filtrados.append(item)
+                
+        print(f"Sucesso! Clonados e limpos {len(filmes_filtrados)} títulos de streaming.")
 except Exception as e:
-    print(f"Erro ao ler banco de dados: {e}")
+    print(f"Erro ao ler o Add-on do Dracid: {e}")
 
-# Estrutura do Manifesto Corrigida para o seu Stremio
+# Estrutura do Manifesto idêntica à do Dracid para garantir compatibilidade máxima
 meu_addon = {
     "id": "org.dracidclean.streaming",
     "version": "1.0.0",
     "name": "Dracid Streaming Limpo",
-    "description": "Catálogo Cumulativo de Streaming do Dracid",
+    "description": "Lançamentos de Streaming do Dracid sem Cinema",
     "resources": ["catalog", "meta"],
     "types": ["movie", "series"],
     "catalogs": [
         {
-            "id": "dracid_streaming_hoje",
+            "id": "dracid_released_movies", # ID igual ao do Dracid para o Stremio aceitar
             "type": "movie",
-            "name": "Lançados no Streaming"
-        },
-        {
-            "id": "dracid_streaming_hoje",
-            "type": "series",
             "name": "Lançados no Streaming"
         }
     ],
-    "metas": filmes_acumulados
+    "metas": filmes_filtrados
 }
 
 with open("manifest.json", "w", encoding="utf-8") as f:
     json.dump(meu_addon, f, indent=4, ensure_ascii=False)
 
-print("Ficheiro manifest.json atualizado de forma segura!")
+print("Ficheiro manifest.json clonado e gerado com sucesso!")
