@@ -1,0 +1,22 @@
+{
+    "id": "org.dracidclean.streaming",
+    "version": "1.0.0",
+    "name": "Dracid Streaming Limpo",
+    "description": "Lançamentos de Streaming do Dia com Badges",
+    "resources": [
+        "catalog",
+        "meta"
+    ],
+    "types": [
+        "movie",
+        "series"
+    ],
+    "catalogs": [
+        {
+            "id": "dracid_streaming_hoje",
+            "type": "movie",
+            "name": "Lançados Hoje no Streaming"
+        }
+    ],
+    "metas": []
+}
