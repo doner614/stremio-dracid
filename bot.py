@@ -4,9 +4,15 @@ from datetime import datetime
 
 print("A iniciar filtragem avançada das listas do Dracid...")
 
-# 1. Descarregar os dados reais do manifesto do Dracid
-url_manifesto = "https://github.io"
-response = requests.get(url_manifesto)
+# 1. Descarregar os dados reais em formato JSON legível
+url_metadados = "https://github.io"
+
+# Adicionar cabeçalho para simular um navegador real e evitar bloqueios
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+}
+
+response = requests.get(url_metadados, headers=headers)
 dados_dracid = response.json()
 
 # Obter a data de hoje no formato do site (ex: "10 Oct 2026")
@@ -25,7 +31,6 @@ for item in dados_dracid.get("metas", []):
         if any(p in plataforma_lower for p in ["netflix", "apple tv+", "prime video", "disney+", "hbo max", "vod", "digital"]):
             
             # FORMATAÇÃO STREMIO: Configurar a Badge (Etiqueta no topo do poster)
-            # Em vez de "IN CINEMA", injetamos a plataforma e a data
             item["behaviorHints"] = {
                 "defaultVideoId": item.get("id"),
                 "hasBadge": True,
