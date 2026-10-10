@@ -2,98 +2,54 @@ import requests
 from bs4 import BeautifulSoup
 import json
 
-print("A extrair dados diretamente das tabelas reais do Dracid...")
+print("A aceder diretamente aos canais de dados oficiais do Dracid...")
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
-# 1. LINKS REAIS (Lembra-te de apagar os espaços dentro das aspas!)
+# 1. LINKS REAIS (Garante que apagas todos os espaços dentro das aspas!)
 urls = {
-    "movie": "https://dracid77.github.io/lists/upcoming-movies",
-    "series": "https://dracid77.github.io/lists/upcoming-series"
+    "movie": "https://dracid77.github.io/lists/addon/catalog/movie/dracid_released_movies.json",
+    "series": "https://dracid77.github.io/lists/addon/catalog/series/dracid_released_series.json"
 }
 
 filmes_filtrados = []
 series_filtradas = []
 
-for tipo, url in urls.items():
+def processar_banco_dados(url, lista_destino):
     url_limpa = url.replace(" ", "")
     try:
         response = requests.get(url_limpa, headers=headers)
-        if response.status_code != 200:
-            print(f"Erro ao aceder à página: {url_limpa}")
-            continue
-            
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        for item in soup.find_all(['div', 'tr', 'li', 'td']):
-            texto = item.get_text()
-            texto_lower = texto.lower()
-            
-            plataformas_validas = ["netflix", "apple tv+", "prime video", "disney+", "hbo max", "vod", "digital"]
-            if any(p in texto_lower for p in plataformas_validas):
+        if response.status_code == 200:
+            dados = response.json()
+            for item in dados.get("metas", []):
+                plataforma = item.get("platform", "Streaming")
+                plataforma_lower = plataforma.lower()
                 
-                if "cinema" in texto_lower and not any(p in texto_lower for p in plataformas_validas if p != "digital"):
-                    continue
-                
-                imdb_id = "tt0000000"
-                for link in item.find_all('a', href=True):
-                    if "://imdb.com" in link['href']:
-                        href_link = link['href']
-                        if "/title/" in href_link:
-                            partes_url = href_link.split("/title/")
-                            if len(partes_url) > 1:
-                                id_extraido = partes_url[1].split("/")[0]
-                                if id_extraido.startswith("tt"):
-                                    imdb_id = id_extraido
-                        break
-                
-                nome_plataforma = "Streaming"
-                for p in plataformas_validas:
-                    if p in texto_lower:
-                        nome_plataforma = p.upper() if p != "apple tv+" else "Apple TV+"
-                        break
-                
-                tag_titulo = item.find(['h2', 'h3', 'strong', 'b'])
-                titulo_str = tag_titulo.get_text().strip() if tag_titulo else "Conteúdo Digital"
-                
-                if imdb_id != "tt0000000":
-                    meta_item = {
-                        "id": imdb_id,
-                        "type": tipo,
-                        "name": titulo_str,
-                        "poster": f"https://metahub.space{imdb_id}/img",
-                        "behaviorHints": {
-                            "defaultVideoId": imdb_id,
-                            "hasBadge": True,
-                            "badge": f"{nome_plataforma}"
-                        }
+                # Aplicação rigorosa do filtro de streaming digital
+                if any(p in plataforma_lower for p in ["netflix", "apple tv+", "prime video", "disney+", "hbo max", "vod", "digital"]):
+                    # Injetar a badge oficial com a plataforma
+                    item["behaviorHints"] = {
+                        "defaultVideoId": item.get("id"),
+                        "hasBadge": True,
+                        "badge": f"{plataforma}"
                     }
-                    if tipo == "movie":
-                        filmes_filtrados.append(meta_item)
-                    else:
-                        series_filtradas.append(meta_item)
+                    lista_destino.append(item)
+        print(f"Sucesso! Processados {len(lista_destino)} itens de {url_limpa}")
     except Exception as e:
-        print(f"Erro ao processar a página {url_limpa}: {e}")
+        print(f"Erro ao ler canal de dados: {e}")
 
-def limpar_duplicados(lista):
-    vistos = set()
-    nova_lista = []
-    for x in lista:
-        if x["id"] not in vistos:
-            vistos.add(x["id"])
-            nova_lista.append(x)
-    return nova_lista
+# Executar a leitura direta nos bancos de dados reais
+processar_banco_dados(urls["movie"], filmes_filtrados)
+processar_banco_dados(urls["series"], series_filtradas)
 
-filmes_finais = limpar_duplicados(filmes_filtrados)
-series_finais = limpar_duplicados(series_filtradas)
-
+# Estrutura do Manifesto com os catálogos separados exigidos pelo Stremio
 meu_addon = {
     "id": "org.dracidclean.streaming",
     "version": "1.0.0",
     "name": "Dracid Streaming Limpo",
-    "description": "Catálogo de Streaming das Tabelas do Dracid",
+    "description": "Catálogo de Streaming Direto da Base de Dados do Dracid",
     "resources": ["catalog", "meta"],
     "types": ["movie", "series"],
     "catalogs": [
@@ -108,10 +64,10 @@ meu_addon = {
             "name": "Séries no Streaming"
         }
     ],
-    "metas": filmes_finais + series_finais
+    "metas": filmes_filtrados + series_filtradas
 }
 
 with open("manifest.json", "w", encoding="utf-8") as f:
     json.dump(meu_addon, f, indent=4, ensure_ascii=False)
 
-print(f"Sucesso! Gerados {len(filmes_finais)} filmes e {len(series_finais)} séries.")
+print(f"Concluído! Catálogo preenchido com {len(filmes_filtrados)} filmes e {len(series_filtradas)} séries.")
