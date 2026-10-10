@@ -90,7 +90,7 @@ meu_addon = {
 if filmes_filtrados:
     meu_addon["metas"] = filmes_filtrados
 
-with open("addon.json", "w", encoding="utf-8") as f:
+with open("manifest.json", "w", encoding="utf-8") as f:
     json.dump(meu_addon, f, indent=4, ensure_ascii=False)
 
 print("Processo concluído com sucesso!")
